@@ -1,0 +1,6 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/home/joao.pinto/linux_kernel_module'
+make: Leaving directory '/home/joao.pinto/linux_kernel_module'
+ 
+make: *** No targets specified and no makefile found.  Stop.
+

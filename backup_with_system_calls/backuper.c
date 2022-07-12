@@ -1,5 +1,5 @@
-// #include <linux/init.h>
 #define _GNU_SOURCE
+// #include <linux/init.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/time.h>
@@ -9,6 +9,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <stdlib.h>
+#include <time.h>
 
 const char *get_filename_ext(const char *filename) {
     const char *dot = strrchr(filename, '.');
@@ -38,12 +39,12 @@ void searchInDirectory(char *dirname, char *file_type, char *path){
                 char *backup;
                 fd_in = open(dirp->d_name, O_RDONLY);
                 if (fd_in == -1) {
-                    printf("Erro ao fazer backup de %s, problema com leitura do arquivo.", dirp->d_name);
+                    printf("Erro ao fazer backup de %s, problema com leitura do arquivo.\n", dirp->d_name);
                 }
 
 
                 if (fstat(fd_in, &stat) == -1) {
-                    printf("Erro ao fazer backup de %s, problema com leitura de tamanho.", dirp->d_name);
+                    printf("Erro ao fazer backup de %s, problema com leitura de tamanho.\n", dirp->d_name);
                 }
 
                 len = stat.st_size;
@@ -56,17 +57,18 @@ void searchInDirectory(char *dirname, char *file_type, char *path){
 
                 fd_out = open(backup, O_CREAT | O_WRONLY | O_TRUNC, 0644);
                 if (fd_out == -1) {
-                    printf("Erro ao fazer backup de %s, problema com arquivo", dirp->d_name);
+                    printf("Erro ao fazer backup de %s, problema com arquivo.\n", dirp->d_name);
                 }
 
                 do {
                     ret = copy_file_range(fd_in, NULL, fd_out, NULL, len, 0); // System call
                     if (ret == -1) {
-                        printf("Erro ao fazer backup de %s, problema com armazenamento de bytes.", dirp->d_name);
+                        printf("Erro ao fazer backup de %s, problema com armazenamento de bytes.\n", dirp->d_name);
                     }
 
                     len -= ret;
                 } while (len > 0 && ret > 0);
+                close(fd_out);
             }
         }
     }
@@ -75,11 +77,13 @@ void searchInDirectory(char *dirname, char *file_type, char *path){
 }
 
 int main(int argc, char *argv[]){
+    clock_t c1, c2; // System call
     printf("Starting backup...\n");
+    c1 = clock();
     char *original_backup_dir;
     FILE *fp = popen("date", "r");
-    char path[64];
-    original_backup_dir = malloc(64);
+    char path[1035];
+    original_backup_dir = malloc(1035);
     strcat(original_backup_dir, "/home/joao.pinto/backups/");
     while (fgets(path, sizeof(path), fp) != NULL) {
     }
@@ -93,5 +97,8 @@ int main(int argc, char *argv[]){
     if(status == 0){
         searchInDirectory(argv[1], argv[2], original_backup_dir);
     }
+    c2 = clock();
+
+    printf("Tempo de exceussão: %ld\n", c2-c1/1000);
     return 0;
 }
